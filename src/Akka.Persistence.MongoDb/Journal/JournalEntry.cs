@@ -5,6 +5,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
 namespace Akka.Persistence.MongoDb.Journal
@@ -28,7 +29,7 @@ namespace Akka.Persistence.MongoDb.Journal
         public bool IsDeleted { get; set; }
 
         [BsonElement("Payload")]
-        public object Payload { get; set; }
+        public byte[] Payload { get; set; }
 
         [BsonElement("Manifest")]
         public string Manifest { get; set; }

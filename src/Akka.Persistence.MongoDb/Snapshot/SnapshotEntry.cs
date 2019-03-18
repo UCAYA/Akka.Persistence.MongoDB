@@ -5,6 +5,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
 namespace Akka.Persistence.MongoDb.Snapshot
@@ -27,6 +28,6 @@ namespace Akka.Persistence.MongoDb.Snapshot
         public long Timestamp { get; set; }
 
         [BsonElement("Snapshot")]
-        public object Snapshot { get; set; }
+        public byte[] Snapshot { get; set; }
     }
 }

@@ -6,9 +6,14 @@
 //-----------------------------------------------------------------------
 
 using System;
+using System.IO;
 using System.Threading.Tasks;
+using Akka.Persistence.Helpers;
 using Akka.Persistence.Snapshot;
+using MongoDB.Bson;
 using MongoDB.Driver;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Bson;
 
 namespace Akka.Persistence.MongoDb.Snapshot
 {
@@ -19,10 +24,12 @@ namespace Akka.Persistence.MongoDb.Snapshot
     {
         private readonly MongoDbSnapshotSettings _settings;
         private Lazy<IMongoCollection<SnapshotEntry>> _snapshotCollection;
+        private readonly SerializationHelper _serialization;
 
         public MongoDbSnapshotStore()
         {
             _settings = MongoDbPersistence.Get(Context.System).SnapshotStoreSettings;
+            _serialization = new SerializationHelper(Context.System);
         }
 
         protected override void PreStart()
@@ -117,21 +124,61 @@ namespace Akka.Persistence.MongoDb.Snapshot
             return filter;
         }
 
-        private static SnapshotEntry ToSnapshotEntry(SnapshotMetadata metadata, object snapshot)
+
+        //private JournalEntry ToJournalEntry(IPersistentRepresentation message)
+        //{
+            
+
+        //    return new JournalEntry
+        //    {
+        //        Id = message.PersistenceId + "_" + message.SequenceNr,
+        //        IsDeleted = message.IsDeleted,
+        //        Payload = new RawBsonDocument(ms.ToArray()),
+        //        PersistenceId = message.PersistenceId,
+        //        SequenceNr = message.SequenceNr,
+        //        Manifest = message.Manifest
+        //    };
+        //}
+
+        //private Persistent ToPersistenceRepresentation(JournalEntry entry, IActorRef sender)
+        //{
+        //    var doc = (RawBsonDocument)entry.Payload;
+        //    var bytes = new byte[doc.Slice.Length];
+        //    doc.Slice.GetBytes(0, bytes, 0, doc.Slice.Length);
+        //    object payload = null;
+        //    using (var reader = new BsonDataReader(new MemoryStream(bytes)))
+        //    {
+        //        JsonSerializer serializer;
+
+        //        if (JsonSerializerSettings != null)
+        //            serializer = JsonSerializer.Create(JsonSerializerSettings);
+        //        else
+        //            serializer = JsonSerializer.CreateDefault();
+        //        payload = serializer.Deserialize(reader);
+        //    }
+
+        //    return new Persistent(payload, entry.SequenceNr, entry.PersistenceId, entry.Manifest, entry.IsDeleted, sender);
+        //}
+
+
+        private SnapshotEntry ToSnapshotEntry(SnapshotMetadata metadata, object snapshot)
         {
+            var snapshotData = _serialization.SnapshotToBytes(new Serialization.Snapshot(snapshot));
+
             return new SnapshotEntry
             {
                 Id = metadata.PersistenceId + "_" + metadata.SequenceNr,
                 PersistenceId = metadata.PersistenceId,
                 SequenceNr = metadata.SequenceNr,
-                Snapshot = snapshot,
+                Snapshot = snapshotData,
                 Timestamp = metadata.Timestamp.Ticks
             };
         }
 
-        private static SelectedSnapshot ToSelectedSnapshot(SnapshotEntry entry)
+        private SelectedSnapshot ToSelectedSnapshot(SnapshotEntry entry)
         {
-            return new SelectedSnapshot(new SnapshotMetadata(entry.PersistenceId, entry.SequenceNr, new DateTime(entry.Timestamp)), entry.Snapshot);
+            var snapshot = _serialization.SnapshotFromBytes(entry.Snapshot);
+            return new SelectedSnapshot(new SnapshotMetadata(entry.PersistenceId, entry.SequenceNr, new DateTime(entry.Timestamp)), snapshot.Data);
         }
     }
 }

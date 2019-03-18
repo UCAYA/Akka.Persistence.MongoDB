@@ -8,10 +8,13 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Akka.Actor;
+using Akka.Persistence.Helpers;
 using Akka.Persistence.Journal;
+using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace Akka.Persistence.MongoDb.Journal
@@ -26,9 +29,13 @@ namespace Akka.Persistence.MongoDb.Journal
         private Lazy<IMongoCollection<JournalEntry>> _journalCollection;
         private Lazy<IMongoCollection<MetadataEntry>> _metadataCollection;
 
+        private readonly SerializationHelper _serialization;
+        
         public MongoDbJournal()
         {
             _settings = MongoDbPersistence.Get(Context.System).JournalSettings;
+            _serialization = new SerializationHelper(Context.System);
+
         }
 
         protected override void PreStart()
@@ -151,16 +158,19 @@ namespace Akka.Persistence.MongoDb.Journal
             {
                 Id = message.PersistenceId + "_" + message.SequenceNr,
                 IsDeleted = message.IsDeleted,
-                Payload = message.Payload,
+                Payload = _serialization.PersistentToBytes(message),
                 PersistenceId = message.PersistenceId,
                 SequenceNr = message.SequenceNr,
                 Manifest = message.Manifest
             };
         }
 
-        private Persistent ToPersistenceRepresentation(JournalEntry entry, IActorRef sender)
+        private IPersistentRepresentation ToPersistenceRepresentation(JournalEntry entry, IActorRef sender)
         {
-            return new Persistent(entry.Payload, entry.SequenceNr, entry.PersistenceId, entry.Manifest, entry.IsDeleted, sender);
+            var deserialized = _serialization.PersistentFromBytes(entry.Payload);
+            return deserialized;
+
+            //return new Persistent(deserialized, entry.SequenceNr, entry.PersistenceId, entry.Manifest, entry.IsDeleted, sender);
         }
 
         private async Task SetHighSequenceId(IList<AtomicWrite> messages)
