@@ -3,7 +3,6 @@
 
   <PropertyGroup>
     <TargetFrameworks>net45;netstandard1.6</TargetFrameworks>
-    <Version>1.3.6</Version>
   </PropertyGroup>
 
   <ItemGroup>
