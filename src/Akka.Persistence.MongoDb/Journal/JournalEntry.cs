@@ -29,7 +29,7 @@ namespace Akka.Persistence.MongoDb.Journal
         public bool IsDeleted { get; set; }
 
         [BsonElement("Payload")]
-        public byte[] Payload { get; set; }
+        public RawBsonDocument Payload { get; set; }
 
         [BsonElement("Manifest")]
         public string Manifest { get; set; }

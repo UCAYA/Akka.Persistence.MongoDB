@@ -28,6 +28,6 @@ namespace Akka.Persistence.MongoDb.Snapshot
         public long Timestamp { get; set; }
 
         [BsonElement("Snapshot")]
-        public byte[] Snapshot { get; set; }
+        public RawBsonDocument Snapshot { get; set; }
     }
 }

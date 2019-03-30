@@ -158,7 +158,7 @@ namespace Akka.Persistence.MongoDb.Journal
             {
                 Id = message.PersistenceId + "_" + message.SequenceNr,
                 IsDeleted = message.IsDeleted,
-                Payload = _serialization.PersistentToBytes(message),
+                Payload = _serialization.PersistentToBson(message),
                 PersistenceId = message.PersistenceId,
                 SequenceNr = message.SequenceNr,
                 Manifest = message.Manifest
@@ -167,7 +167,7 @@ namespace Akka.Persistence.MongoDb.Journal
 
         private IPersistentRepresentation ToPersistenceRepresentation(JournalEntry entry, IActorRef sender)
         {
-            var deserialized = _serialization.PersistentFromBytes(entry.Payload);
+            var deserialized = _serialization.PersistentFromBson(entry.Payload);
             return deserialized;
 
             //return new Persistent(deserialized, entry.SequenceNr, entry.PersistenceId, entry.Manifest, entry.IsDeleted, sender);

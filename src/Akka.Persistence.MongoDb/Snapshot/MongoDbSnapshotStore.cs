@@ -163,7 +163,7 @@ namespace Akka.Persistence.MongoDb.Snapshot
 
         private SnapshotEntry ToSnapshotEntry(SnapshotMetadata metadata, object snapshot)
         {
-            var snapshotData = _serialization.SnapshotToBytes(new Serialization.Snapshot(snapshot));
+            var snapshotData = _serialization.SnapshotToBson(new Serialization.Snapshot(snapshot));
 
             return new SnapshotEntry
             {
@@ -177,7 +177,7 @@ namespace Akka.Persistence.MongoDb.Snapshot
 
         private SelectedSnapshot ToSelectedSnapshot(SnapshotEntry entry)
         {
-            var snapshot = _serialization.SnapshotFromBytes(entry.Snapshot);
+            var snapshot = _serialization.SnapshotFromBson(entry.Snapshot);
             return new SelectedSnapshot(new SnapshotMetadata(entry.PersistenceId, entry.SequenceNr, new DateTime(entry.Timestamp)), snapshot.Data);
         }
     }
