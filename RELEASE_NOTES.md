@@ -1,3 +1,5 @@
+#### 1.3.6 March 23 2019 ####
+Serialize using json.net bson
 
 #### 1.3.5 March 23 2018 ####
 Support for Akka.Persistence 1.3.5.
@@ -18,7 +20,7 @@ try {
 	var db = connect('{your_database_address}');
 
 	var persistenceIds = db.EventJournal.distinct('PersistenceId');
-	
+
 	persistenceIds.forEach(persistenceId => {
 		print('Finding highest SequenceNr for PersistenceId: ' + persistenceId);
 		var highestSequenceNr = db.EventJournal
@@ -27,7 +29,7 @@ try {
 			.limit(1)
 			.next()
 			.SequenceNr;
-		
+
 		print('Highest SequenceNr found ' + highestSequenceNr + ', inserting into Metadata table...');
 		db.Metadata.insertOne(
 			{
@@ -36,7 +38,7 @@ try {
 				SequenceNr: highestSequenceNr
 			}
 		);
-		
+
 		print('Inserted successfully');
 	});
 } catch(e) {
