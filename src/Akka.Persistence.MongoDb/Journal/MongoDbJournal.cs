@@ -56,11 +56,12 @@ namespace Akka.Persistence.MongoDb.Journal
 
                 if (_settings.AutoInitialize)
                 {
-                    collection.Indexes.CreateOneAsync(
-                        Builders<JournalEntry>.IndexKeys
+                    var model = new CreateIndexModel<JournalEntry>(
+                            Builders<JournalEntry>.IndexKeys
                             .Ascending(entry => entry.PersistenceId)
-                            .Descending(entry => entry.SequenceNr))
-                            .Wait();
+                            .Descending(entry => entry.SequenceNr));
+                    
+                    collection.Indexes.CreateOneAsync(model).Wait();
                 }
 
                 return collection;
@@ -72,10 +73,11 @@ namespace Akka.Persistence.MongoDb.Journal
 
                 if (_settings.AutoInitialize)
                 {
-                    collection.Indexes.CreateOneAsync(
-                        Builders<MetadataEntry>.IndexKeys
-                            .Ascending(entry => entry.PersistenceId))
-                            .Wait();
+                    var model = new CreateIndexModel<MetadataEntry>(
+                            Builders<MetadataEntry>.IndexKeys
+                            .Ascending(entry => entry.PersistenceId));
+                    
+                    collection.Indexes.CreateOneAsync(model).Wait();
                 }
 
                 return collection;

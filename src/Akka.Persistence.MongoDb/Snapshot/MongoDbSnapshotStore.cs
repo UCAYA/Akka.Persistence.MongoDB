@@ -46,11 +46,12 @@ namespace Akka.Persistence.MongoDb.Snapshot
                 var collection = snapshot.GetCollection<SnapshotEntry>(_settings.Collection);
                 if (_settings.AutoInitialize)
                 {
-                    collection.Indexes.CreateOneAsync(
-                        Builders<SnapshotEntry>.IndexKeys
-                        .Ascending(entry => entry.PersistenceId)
-                        .Descending(entry => entry.SequenceNr))
-                        .Wait();
+                    var model = new CreateIndexModel<SnapshotEntry>(
+                            Builders<SnapshotEntry>.IndexKeys
+                            .Ascending(entry => entry.PersistenceId)
+                            .Descending(entry => entry.SequenceNr));
+                    
+                    collection.Indexes.CreateOneAsync(model).Wait();
                 }
 
                 return collection;
